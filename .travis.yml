@@ -3,12 +3,16 @@ services:
   - docker
 
 env:
-  - VERSION=1.0.2 VARIANT=
-  - VERSION=1.1.0 VARIANT=
+  global:
+    - REGISTRY_USER=jamiehewland
+    - secure: "IPGWs+prFWxbVNEB+HiCEBt62YJeS5iuAzQ8wmuXewwq10rzdcccRi1fsWqDLgRH9YgLYtNBAdrmcfBjm5C/W6f9Oi7bzfo3k+mVwFisSFu0w6RoZm7QrsJnOzWkH/6wJ7jevPsGrYio1LfI3R/X2LZp/qKRk+aUwAQeD8wD00sX0Lzu0g+PGWm1/kfZEp24/+/shC641bKHe5IlGQnbliPmHLwOq/8V5CLrHcB82xxb5h1ocXfbtoskA3nq+BRNjmVeFaNJCfRgqz+BF81NQumU0GHtFbE/I6dKGs/SddSrl0gxK32CiMeWyxJrNGdCt+gzwkRMMbZ8AOArxytKhj5Z+Gf1Lp1PWhPL5ez5p2YLGquLDH41H/3/AQnxY/ttTM9rtA4dDfpTKfwnu4RNjRyw0g8LGqQSTom4iPdIQlugC6jpdQGV/YBXI5UqyHPX98Yuo0egCug84ul1YNzwBJw9EXslisKT5qDFoj0M5lLiEP2tzibl6lSNsmfz9BIlrxcgebXomn/zBmHncavVAdzA4bXaW0tG1ubc2v7qcQranNx8F9eHKJ/pvlkQ1L0qYoIU7EMF3vni9dz3Lb4oBc2Zs2Zn3D4QBGF+SX34qJ1wYIkCwdrJpGD14LLZNp9D4LqQsMfcN3tiNpcRweO7/oyjG0qUx0cT2EYuPWklmhs="
+  matrix:
+    - VERSION=1.0.2 VARIANT=
+    - VERSION=1.1.0 VARIANT=
 
 before_script:
+  - image="jamiehewland/openssl:$VERSION${VARIANT:+-$VARIANT}"
   - version="$(awk '$2 == "OPENSSL_VERSION" { print $3; exit }' $VERSION/Dockerfile)"
-  - image="jamiehewland/openssl:$version${VARIANT:+-$VARIANT}"
 
 script:
   - docker build -t "$image" "$VERSION/$VARIANT"
@@ -16,3 +20,13 @@ script:
 
 after_script:
   - docker images
+
+before_deploy:
+  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - version_tag="jamiehewland/openssl:$version${VARIANT:+-$VARIANT}"
+  - docker tag "$image" "$version_tag"
+deploy:
+  provider: script
+  script: docker push "$image" && docker push "$version_tag" 
+  on:
+    branch: master
