@@ -8,7 +8,7 @@ ENV OPENSSL_VERSION 1.1.0c
 
 RUN set -x \
     && buildDeps=' \
-				ca-certificates \
+        ca-certificates \
         gcc \
         libc6-dev \
         make \

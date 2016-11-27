@@ -8,7 +8,7 @@ ENV OPENSSL_VERSION 1.0.2j
 
 RUN set -x \
     && buildDeps=' \
-				ca-certificates \
+        ca-certificates \
         gcc \
         libc6-dev \
         make \
@@ -19,8 +19,8 @@ RUN set -x \
     && rm -rf /var/lib/apt/lists/* \
     \
     && wget -O openssl.tar.gz "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" \
-		&& wget -O openssl.tar.gz.asc "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz.asc" \
-		&& export GNUPGHOME="$(mktemp -d)" \
+    && wget -O openssl.tar.gz.asc "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz.asc" \
+    && export GNUPGHOME="$(mktemp -d)" \
     && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY" \
     && gpg --batch --verify openssl.tar.gz.asc openssl.tar.gz \
     && rm -r "$GNUPGHOME" openssl.tar.gz.asc \
@@ -31,13 +31,13 @@ RUN set -x \
     && cd /usr/src/openssl \
     && perl ./Configure linux-x86_64 \
         enable-ec_nistp_64_gcc_128 \
-				shared \
-				-Wl,-rpath=/usr/local/ssl/lib \
+        shared \
+        -Wl,-rpath=/usr/local/ssl/lib \
     && make depend \
     && make \
     && make test \
     && make install_sw \
-		\
+    \
 # bootstrap with the system CA certificates, a la Homebrew
     && cp /etc/ssl/certs/*.pem /usr/local/ssl/certs/ \
     && c_rehash /usr/local/ssl/certs \
